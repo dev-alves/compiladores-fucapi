@@ -32,23 +32,6 @@ public class AnaliseToken {
         return false;
     }
 
-    /**
-     * Verifcar se a expressão é do tipo: [N][N]
-     * @param tokenList
-     * @return
-     */
-    public static boolean cholcheteExpressao(List<Token> tokenList) {
-        if(colcheteAbeturaDeExpressao(tokenList.get(NextOrPrevious.getPosition()))) {
-            if(tokenList.get(NextOrPrevious.getPosition()).getClasseToken().getNome().equals(ClasseToken.CONSTANTE_NUMERICA)){
-                if(colcheteFechaDeExpressao(tokenList.get(NextOrPrevious.getPosition()))) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
     public static boolean abreParenteses(Token token) {
         if(token.getValor().equals("(")){
             NextOrPrevious.next();
@@ -81,6 +64,23 @@ public class AnaliseToken {
             System.out.println("Fechou colchetes");
             return true;
         }
+        return false;
+    }
+
+    /**
+     * Verifcar se a expressão é do tipo: [N][N]
+     * @param tokenList
+     * @return
+     */
+    public static boolean cholcheteExpressao(List<Token> tokenList) {
+        if(colcheteAbeturaDeExpressao(tokenList.get(NextOrPrevious.getPosition()))) {
+            if(tokenList.get(NextOrPrevious.getPosition()).getClasseToken().getNome().equals(ClasseToken.CONSTANTE_NUMERICA)){
+                if(colcheteFechaDeExpressao(tokenList.get(NextOrPrevious.getPosition()))) {
+                    return true;
+                }
+            }
+        }
+
         return false;
     }
 
