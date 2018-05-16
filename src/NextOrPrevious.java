@@ -25,6 +25,10 @@ public class NextOrPrevious {
         return position;
     }
 
+    public static void setPosition(int position) {
+        NextOrPrevious.position = position;
+    }
+
     public static void next() {
         if(position < size)
             position++;
