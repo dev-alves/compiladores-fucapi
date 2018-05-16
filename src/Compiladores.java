@@ -1,4 +1,3 @@
-import java.math.BigInteger;
 import java.util.List;
 
 public class Compiladores {
@@ -45,9 +44,11 @@ public class Compiladores {
     public static void main(String[] args) {
 
         StringBuilder sb = new StringBuilder();
-        sb.append("int x1, x2, x3;\n");
+        sb.append("int teste(){\n");
+        sb.append("}\n");
         sb.append("int main() {\n");
-        sb.append("char sexo = 'M';");
+        sb.append("char sexo = 'M';\n");
+        sb.append("int x1, x2, x3;\n");
         //sb.append("/*comentario de bloco*/");
         sb.append(" x1 = 22; //este é um comentário \n");
         sb.append("printf(\"Resultado: %d\", x1);");
@@ -168,122 +169,39 @@ public class Compiladores {
             System.out.println("Tamanho do NP: " + NextOrPrevious.getSize());
 
             System.out.println("Linha "+i+" # tokens sendo analisados:");
+            for (Token t : tokensSobAnalise) {
+                System.out.println("Tokens: " + t.toString());
+            }
 
-            if (dlc(tokensSobAnalise)) {
+            if ( (dlc(tokensSobAnalise) && AnaliseToken.pontoVirgula(tokensSobAnalise.get(NextOrPrevious.getPosition())))) {
                 System.out.println("Os tokens abaixo compoe uma declaração");
                 for (Token t : tokensSobAnalise) {
                     System.out.println(t.toString());
                 }
             } else {
                 System.out.println("NÃO É DECLARAÇÃO!!!");
+
+            }
+
+            NextOrPrevious.setPosition(0);
+
+            if(func(tokensSobAnalise)) {
+                System.out.println("Os tokens abaixo compoe uma func");
+                for (Token t : tokensSobAnalise) {
+                    System.out.println(t.toString());
+                }
+            } else  {
+                System.out.println("NÃO É UMA FUNÇÃO!");
             }
         }
-    }
-
-    private static boolean func(List<Token> token) {
-          //TO DO
-        return  true;
-    }
-
-    public static boolean virgulaOpc(Token token) {
-
-        if(token.getValor().equals(",")) {
-            NextOrPrevious.next();
-            return true;
-        }
-
-        return false;
-    }
-
-    public static boolean pontoVirgula(Token token) {
-        if(token.getValor().equals(";")) {
-            NextOrPrevious.next();
-            return true;
-        }
-
-        return false;
-    }
-    /**
-     * Retorna o TIPO(int, char, float..) do TOKEN
-     * @param token
-     * @return
-     */
-    public static boolean type(Token token) {
-        NextOrPrevious.next();
-        return token.getClasseToken().getNome().equals(ClasseToken.PALAVRA_RESERVADA);
-    }
-
-    public static boolean isIdent(Token token) {
-        NextOrPrevious.next();
-        return token.getClasseToken().getNome().equals(ClasseToken.IDENTIFICADOR);
-    }
-
-    /**
-     * Verifcar se a expressão é do tipo: [N][N]
-     * @param tokenList
-     * @return
-     */
-    public static boolean cholcheteExpressao(List<Token> tokenList) {
-       if(colcheteAbeturaDeExpressao(tokenList.get(NextOrPrevious.getPosition()))) {
-           if(tokenList.get(NextOrPrevious.getPosition()).getClasseToken().getNome().equals(ClasseToken.CONSTANTE_NUMERICA)){
-               if(colcheteFechaDeExpressao(tokenList.get(NextOrPrevious.getPosition()))) {
-                   return true;
-               }
-           }
-       }
-
-       return false;
-    }
-
-    public static boolean colcheteAbeturaDeExpressao(Token token) {
-        NextOrPrevious.next();
-        return token.getValor().equals("[");
-    }
-
-    public static boolean colcheteFechaDeExpressao(Token token) {
-        NextOrPrevious.next();
-        return token.getValor().equals("]");
-    }
-
-
-    public static boolean opcVarDlc(List<Token> tokenList) {
-        if (virgulaOpc(tokenList.get(NextOrPrevious.getPosition()))
-                && varDlc(tokenList.get(NextOrPrevious.getPosition()))) {
-            return opcVarDlc(tokenList);
-        }
-
-        if(pontoVirgula(tokenList.get(NextOrPrevious.getPosition()))) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Transformando a bnf abaixo em código
-     * var_decla : id [ '[' intcon ']' ]
-     * @param token
-     * @return
-     */
-    public static boolean varDlc (Token token) {
-        System.out.println("token: " + token.getClasseToken().getNome());
-        if(token.getClasseToken().getNome().equals(ClasseToken.IDENTIFICADOR)) {
-            NextOrPrevious.next();
-            return true;
-        }
-        return false;
-    }
-
-    public static boolean prog(List<Token> tokens) {
-        return dlc(tokens);
     }
 
     public static boolean dlc(List<Token> tokenList) {
 
         if (tokenList.size() >= 3) {
             boolean primeiroValido = type(tokenList.get(NextOrPrevious.getPosition()));
-            boolean segundoValido = isIdent(tokenList.get(NextOrPrevious.getPosition()));
-            boolean terceiroValido = pontoVirgula(tokenList.get(NextOrPrevious.getPosition()));
+            boolean segundoValido = AnaliseToken.isIdent(tokenList.get(NextOrPrevious.getPosition()));
+            boolean terceiroValido = AnaliseToken.pontoVirgula(tokenList.get(NextOrPrevious.getPosition()));
 
             if (primeiroValido
                     && segundoValido
@@ -298,13 +216,80 @@ public class Compiladores {
                     opcDeclacao = true;
                 }
 
-                return ((primeiroValido && segundoValido && opcDeclacao));
+                if(primeiroValido && segundoValido && opcDeclacao) {
+                    return true;
+                }
             }
         }
 
         return false;
-
     }
+
+    public static boolean varDlc (Token token) {
+        if(token.getClasseToken().getNome().equals(ClasseToken.IDENTIFICADOR)) {
+            NextOrPrevious.next();
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean opcVarDlc(List<Token> tokenList) {
+        if (AnaliseToken.virgulaOpc(tokenList.get(NextOrPrevious.getPosition()))
+                && varDlc(tokenList.get(NextOrPrevious.getPosition()))) {
+
+            return opcVarDlc(tokenList);
+        }
+        return tokenList.get(NextOrPrevious.getPosition()).getClasseToken().getNome().equals(ClasseToken.SIMBOLO);
+    }
+
+    /**
+     * Retorna o TIPO(int, char, float..) do TOKEN
+     * @param token
+     * @return
+     */
+    public static boolean type(Token token) {
+        if(token.getClasseToken().getNome().equals(ClasseToken.PALAVRA_RESERVADA)) {
+            NextOrPrevious.next();
+            System.out.println("É um tipo");
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean parmTypes(List<Token> tokenList) {
+        if(tokenList.get(NextOrPrevious.getPosition()).getValor().equals("void")) {
+            return true;
+        } else if (type(tokenList.get(NextOrPrevious.getPosition())) &&
+                AnaliseToken.isIdent(tokenList.get(NextOrPrevious.getPosition()))) {
+            if(AnaliseToken.colcheteAbeturaDeExpressao(tokenList.get(NextOrPrevious.getPosition()))
+                    && AnaliseToken.colcheteFechaDeExpressao(tokenList.get(NextOrPrevious.getPosition()))) {
+                return true;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    // sb.append("int teste(int i[]) {\n");
+    private static boolean func(List<Token> tokenList) {
+        if(type(tokenList.get(NextOrPrevious.getPosition()))
+                && AnaliseToken.isIdent(tokenList.get(NextOrPrevious.getPosition()))
+                && AnaliseToken.abreParenteses(tokenList.get(NextOrPrevious.getPosition()))
+                && AnaliseToken.fechaParenteses(tokenList.get(NextOrPrevious.getPosition()))
+                && AnaliseToken.abreChaves(tokenList.get(NextOrPrevious.getPosition()))) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    //STMT
+    //ASSG
+
+    public static boolean prog(List<Token> tokens) {
+        return dlc(tokens);
+    }
+
     
 }
 
