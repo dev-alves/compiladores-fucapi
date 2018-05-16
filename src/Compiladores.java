@@ -6,6 +6,87 @@ public class Compiladores {
     public static ClasseToken palavraReservada  = new ClasseToken(ClasseToken.PALAVRA_RESERVADA);
     public static ClasseToken identificador = new ClasseToken(ClasseToken.IDENTIFICADOR);
 
+    private static boolean isLetra(char charAt) {
+        return "abcdefghijlkmnopqrstuxwz".contains(charAt+"");
+    }
+
+    private static boolean isNumero(char charAt) {
+        return "0123456789".contains(charAt+"");
+    }
+
+    private static int procurarIdentificador(String codigoFonte, int i) {
+        int inicio = i;
+        while (isLetra(codigoFonte.charAt(i))
+                || isNumero(codigoFonte.charAt(i))
+                || codigoFonte.charAt(i) == '_') {
+            i++;
+        }
+
+        String ident = codigoFonte.substring(inicio,i);
+
+        if (PalavraReservada.isPalavraReservada(ident)) {
+            TabelaSimbolo.addToken(new Token(palavraReservada, ident, linhaAtual,inicio));
+        } else {
+            TabelaSimbolo.addToken(new Token(identificador, ident, linhaAtual,inicio));
+        }
+
+        return i;
+    }
+    private static int procurarNumero(String codigoFonte, int i) {
+        int inicio = i;
+        while (isNumero(codigoFonte.charAt(i))) {
+            i++;
+        }
+
+        String numero = codigoFonte.substring(inicio,i);
+        TabelaSimbolo.addToken(new Token(new ClasseToken(ClasseToken.CONSTANTE_NUMERICA), numero, linhaAtual, inicio));
+        return i;
+    }
+
+    private static int pularLinha(String codigoFonte, int i) {
+        do {
+            i++;
+        } while (codigoFonte.charAt(i) != '\n');
+        return i;
+    }
+
+    private static int pularBloco(String codigoFonte, int i) {
+        do {
+            i++;
+        } while (!codigoFonte.substring(i, i+2).equals("*/")
+                && i <= codigoFonte.length());
+        return i++;
+    }
+
+    private static boolean isLiteral(char elem) {
+        return elem == '\'' || elem == '"';
+    }
+
+    private static int procurarLiteral(String codigoFonte, int i) {
+        ClasseToken constanteLiteral = new ClasseToken(ClasseToken.LITERAL);
+        // "este é um literal"
+        int inicio = i;
+        char caracterTerminal = codigoFonte.charAt(i);
+        do {
+            i++;
+        } while (codigoFonte.charAt(i) != caracterTerminal);
+
+        String literal = codigoFonte.substring(inicio,++i);
+        TabelaSimbolo.addToken(new Token(constanteLiteral, literal, linhaAtual, inicio));
+        return i;
+    }
+
+    private static boolean isSimbolo(char elem) {
+        String simbolos = "<>=!-+*/%{}[];|&(),";
+        return simbolos.contains(elem+"");
+    }
+
+    private static int procurarSimbolo(String codigoFonte, int i) {
+        ClasseToken simboloClasse = new ClasseToken(ClasseToken.SIMBOLO);
+        TabelaSimbolo.addToken(new Token(simboloClasse, codigoFonte.substring(i, i+1), linhaAtual,i));
+        return i++;
+    }
+
     public static int lex(String codigoFonte, int i) {
 
         char elem = codigoFonte.charAt(i);
@@ -72,92 +153,6 @@ public class Compiladores {
         }*/
         analiseSintatica();
     }
-/*
-    private static boolean isIdent(String cadeia) {
-
-    }
-*/
-    private static boolean isLetra(char charAt) {
-        return "abcdefghijlkmnopqrstuxwz".contains(charAt+"");
-    }
-
-    private static boolean isNumero(char charAt) {
-        return "0123456789".contains(charAt+"");
-    }
-
-    private static int procurarIdentificador(String codigoFonte, int i) {
-        int inicio = i;
-        while (isLetra(codigoFonte.charAt(i))
-                || isNumero(codigoFonte.charAt(i))
-                || codigoFonte.charAt(i) == '_') {
-            i++;
-        }
-
-        String ident = codigoFonte.substring(inicio,i);
-
-        if (PalavraReservada.isPalavraReservada(ident)) {
-            TabelaSimbolo.addToken(new Token(palavraReservada, ident, linhaAtual,inicio));
-        } else {
-            TabelaSimbolo.addToken(new Token(identificador, ident, linhaAtual,inicio));
-        }
-        
-        return i;
-    }
-    private static int procurarNumero(String codigoFonte, int i) {
-        int inicio = i;
-        while (isNumero(codigoFonte.charAt(i))) {
-            i++;
-        }
-        
-        String numero = codigoFonte.substring(inicio,i);
-        TabelaSimbolo.addToken(new Token(new ClasseToken(ClasseToken.CONSTANTE_NUMERICA), numero, linhaAtual, inicio));
-        return i;
-    }
-
-    private static int pularLinha(String codigoFonte, int i) {
-        do {
-            i++;
-        } while (codigoFonte.charAt(i) != '\n');
-        return i;
-    }
-
-    private static int pularBloco(String codigoFonte, int i) {
-        do {
-            i++;
-        } while (!codigoFonte.substring(i, i+2).equals("*/")
-                && i <= codigoFonte.length());
-        return i++;
-    }
-
-    private static boolean isLiteral(char elem) {
-        return elem == '\'' || elem == '"';
-    }
-
-    private static int procurarLiteral(String codigoFonte, int i) {
-        ClasseToken constanteLiteral = new ClasseToken(ClasseToken.LITERAL);
-        // "este é um literal"
-        int inicio = i;
-        char caracterTerminal = codigoFonte.charAt(i);
-        do {    
-            i++;
-        } while (codigoFonte.charAt(i) != caracterTerminal);
-        
-        String literal = codigoFonte.substring(inicio,++i);
-        TabelaSimbolo.addToken(new Token(constanteLiteral, literal, linhaAtual, inicio));
-        return i;
-    }
-
-    private static boolean isSimbolo(char elem) {
-        String simbolos = "<>=!-+*/%{}[];|&(),";
-        return simbolos.contains(elem+"");
-    }
-
-    private static int procurarSimbolo(String codigoFonte, int i) {
-        ClasseToken simboloClasse = new ClasseToken(ClasseToken.SIMBOLO);
-        TabelaSimbolo.addToken(new Token(simboloClasse, codigoFonte.substring(i, i+1), linhaAtual,i));
-        return i++;
-    }
-
 
     private static void analiseSintatica() {
         System.out.println("Iniciando Análise Sintática");
