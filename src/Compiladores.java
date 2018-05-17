@@ -202,16 +202,18 @@ public class Compiladores {
                     && segundoValido
                     && terceiroValido) {
 
+                NextOrPrevious.modificarStatus();
                 return true;
             }
 
             boolean opcDeclacao = false;
-            if(NextOrPrevious.getPosition() < NextOrPrevious.getSize()) {
+            if(NextOrPrevious.getStatus().equals(Status.INCOMPLETO)) {
                 if(opcVarDlc(tokenList)) {
                     opcDeclacao = true;
                 }
 
                 if(primeiroValido && segundoValido && opcDeclacao) {
+                    NextOrPrevious.modificarStatus();
                     return true;
                 }
             }
