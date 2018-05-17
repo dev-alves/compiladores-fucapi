@@ -207,7 +207,7 @@ public class Compiladores {
             }
 
             boolean opcDeclacao = false;
-            if(NextOrPrevious.getStatus().equals(Status.INCOMPLETO)) {
+            if (NextOrPrevious.getStatusNP().equals(StatusNP.INCOMPLETO)) {
                 if(opcVarDlc(tokenList)) {
                     opcDeclacao = true;
                 }

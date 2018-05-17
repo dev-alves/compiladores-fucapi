@@ -2,7 +2,7 @@ public class NextOrPrevious {
 
     private static int size;
     private static  int position = 0;
-    private static Status status = Status.INCOMPLETO;
+    private static StatusNP statusNP = StatusNP.INCOMPLETO;
 
     public NextOrPrevious(int size) {
         this.size = size;
@@ -40,15 +40,15 @@ public class NextOrPrevious {
             position--;
     }
 
-    public static Status getStatus() {
-        return status;
+    public static StatusNP getStatusNP() {
+        return statusNP;
     }
 
     public static void modificarStatus() {
         if(position < size) {
-            NextOrPrevious.status = Status.INCOMPLETO;
+            NextOrPrevious.statusNP = StatusNP.INCOMPLETO;
         } else if (position == size) {
-            NextOrPrevious.status= Status.COMPLETO;
+            NextOrPrevious.statusNP = StatusNP.COMPLETO;
         }
 
     }
