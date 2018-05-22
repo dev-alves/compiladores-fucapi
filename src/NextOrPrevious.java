@@ -2,7 +2,8 @@ public class NextOrPrevious {
 
     private static int size;
     private static  int position = 0;
-    private static StatusNP statusNP = StatusNP.INCOMPLETO;
+    private static StatusNP statusNP;
+    private static int row = 1;
 
     public NextOrPrevious(int size) {
         this.size = size;
@@ -19,7 +20,6 @@ public class NextOrPrevious {
 
     public static void setSize(int size) {
         NextOrPrevious.size = size;
-        NextOrPrevious.position = 0;
     }
 
     public static int getPosition() {
@@ -30,8 +30,20 @@ public class NextOrPrevious {
         NextOrPrevious.position = position;
     }
 
+    public static int getRow() {
+        return row;
+    }
+
+    public static void setRow(int row) {
+        NextOrPrevious.row = row;
+    }
+
+    public static void nextRow() {
+        NextOrPrevious.setRow(NextOrPrevious.getRow()+1);
+    }
+
     public static void next() {
-        if(position < size)
+        if (position < size)
             position++;
     }
 
@@ -52,4 +64,14 @@ public class NextOrPrevious {
         }
 
     }
+
+    public static void update() {
+        NextOrPrevious.resetPosition();
+        NextOrPrevious.nextRow();
+    }
+
+    public static void resetPosition() {
+        NextOrPrevious.setPosition(0);
+    }
+
 }

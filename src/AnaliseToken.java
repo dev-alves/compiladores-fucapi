@@ -4,6 +4,51 @@ public class AnaliseToken {
 
     private static Token token;
 
+    public static boolean tokenIf(Token token) {
+        if(token.getValor().equals("if")) {
+            NextOrPrevious.next();
+            return true;
+        }
+
+        return false;
+    }
+
+    public static boolean tokenElse(Token token) {
+        if(token.getValor().equals("else")) {
+            NextOrPrevious.next();
+            return true;
+        }
+
+        return false;
+    }
+
+    public static boolean tokenWhile(Token token) {
+        if(token.getValor().equals("while")) {
+            NextOrPrevious.next();
+            return true;
+        }
+
+        return false;
+    }
+
+
+    public static boolean logicalOp(List<Token> tokens) {
+        String eLogical = "&&";
+        String ouLogical = "||";
+        int i=0;
+        boolean result = false;
+        while (i<2) {
+            if(eLogical.contains(tokens.get(NextOrPrevious.getPosition()).getValor())){
+                NextOrPrevious.next();
+                if(i==1)
+                    result = true;
+            }
+            i++;
+        }
+
+        return result ? true: false;
+    }
+
     public static boolean virgulaOpc(Token token) {
 
         if(token.getValor().equals(",")) {
@@ -26,24 +71,22 @@ public class AnaliseToken {
     public static boolean isIdent(Token token) {
         if(token.getClasseToken().getNome().equals(ClasseToken.IDENTIFICADOR)) {
             NextOrPrevious.next();
-            System.out.println("É um ident");
             return true;
         }
         return false;
     }
 
     public static boolean abreParenteses(Token token) {
-        if(token.getValor().equals("(")){
+        if(token.getValor().equals("(")) {
             NextOrPrevious.next();
-            System.out.println("Abriu parentes");
             return true;
         }
         return false;
     }
+
     public static boolean fechaParenteses(Token token) {
         if(token.getValor().equals(")")) {
             NextOrPrevious.next();
-            System.out.println("Fechou parentes");
             return true;
         }
         return false;
@@ -52,7 +95,6 @@ public class AnaliseToken {
     public static boolean colcheteAbeturaDeExpressao(Token token) {
         if( token.getValor().equals("[")) {
             NextOrPrevious.next();
-            System.out.println("Abriu colchetes");
             return true;
         }
         return false;
@@ -61,7 +103,6 @@ public class AnaliseToken {
     public static boolean colcheteFechaDeExpressao(Token token) {
         if(token.getValor().equals("]")) {
             NextOrPrevious.next();
-            System.out.println("Fechou colchetes");
             return true;
         }
         return false;
@@ -87,11 +128,11 @@ public class AnaliseToken {
     public static boolean abreChaves(Token token) {
         if(token.getValor().equals("{")) {
             NextOrPrevious.next();
-            System.out.println("Abriu chaves");
             return true;
         }
         return false;
     }
+
     public static boolean fechaChaves(Token token) {
         if(token.getValor().equals("}")) {
             NextOrPrevious.next();

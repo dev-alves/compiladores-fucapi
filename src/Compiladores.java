@@ -3,6 +3,7 @@ import java.util.List;
 public class Compiladores {
 
     public static int linhaAtual = 1;
+
     public static ClasseToken palavraReservada  = new ClasseToken(ClasseToken.PALAVRA_RESERVADA);
     public static ClasseToken identificador = new ClasseToken(ClasseToken.IDENTIFICADOR);
 
@@ -126,14 +127,15 @@ public class Compiladores {
 
         StringBuilder sb = new StringBuilder();
         sb.append("int teste(){\n");
+        sb.append("int p;");
         sb.append("}\n");
         sb.append("int main() {\n");
-        sb.append("char sexo = 'M';\n");
         sb.append("int x1, x2, x3;\n");
+        sb.append("int x;\n");
+        sb.append("}\n");
         //sb.append("/*comentario de bloco*/");
-        sb.append(" x1 = 22; //este é um comentário \n");
-        sb.append("printf(\"Resultado: %d\", x1);");
-        sb.append("return 0;\n");
+        //sb.append("return 0;\n");
+        sb.append("int x4;\n");
         sb.append("}\n");
         String codigoFonte = sb.toString();
         //System.out.println(codigoFonte);
@@ -156,49 +158,51 @@ public class Compiladores {
 
     private static void analiseSintatica() {
         System.out.println("Iniciando Análise Sintática");
-        for (int i=1; i<linhaAtual; i++) {
-            List<Token> tokensSobAnalise = TabelaSimbolo.getTokensByLinha(i);
+        while (NextOrPrevious.getRow()<linhaAtual){
+            List<Token> tokensSobAnalise = TabelaSimbolo.getTokensByLinha(NextOrPrevious.getRow());
 
             NextOrPrevious.setSize(tokensSobAnalise.size());
+            NextOrPrevious.resetPosition();
 
             System.out.println("Tamanho do NP: " + NextOrPrevious.getSize());
 
-            System.out.println("Linha "+i+" # tokens sendo analisados:");
+            System.out.println("Linha "+NextOrPrevious.getRow()+" # tokens sendo analisados:");
             for (Token t : tokensSobAnalise) {
                 System.out.println("Tokens: " + t.toString());
             }
 
-            if ( (dlc(tokensSobAnalise) && AnaliseToken.pontoVirgula(tokensSobAnalise.get(NextOrPrevious.getPosition())))) {
+            if ( (dlc(tokensSobAnalise))) {
                 System.out.println("Os tokens abaixo compoe uma declaração");
                 for (Token t : tokensSobAnalise) {
                     System.out.println(t.toString());
                 }
             } else {
+
                 System.out.println("NÃO É DECLARAÇÃO!!!");
+                NextOrPrevious.resetPosition();
 
-            }
 
-            NextOrPrevious.setPosition(0);
-
-            if(func(tokensSobAnalise)) {
-                System.out.println("Os tokens abaixo compoe uma func");
-                for (Token t : tokensSobAnalise) {
-                    System.out.println(t.toString());
+                System.out.println("Verificando a função");
+                if(func(tokensSobAnalise)) {
+                    System.out.println("Fim da analise da função");
+                } else  {
+                    System.out.println("NÃO É UMA FUNÇÃO!");
                 }
-            } else  {
-                System.out.println("NÃO É UMA FUNÇÃO!");
             }
+
+            NextOrPrevious.nextRow();
         }
     }
 
     public static boolean dlc(List<Token> tokenList) {
 
-        if (tokenList.size() >= 3) {
+        if(tokenList.size() >= 3) {
+
             boolean primeiroValido = type(tokenList.get(NextOrPrevious.getPosition()));
             boolean segundoValido = AnaliseToken.isIdent(tokenList.get(NextOrPrevious.getPosition()));
             boolean terceiroValido = AnaliseToken.pontoVirgula(tokenList.get(NextOrPrevious.getPosition()));
 
-            if (primeiroValido
+            if(primeiroValido
                     && segundoValido
                     && terceiroValido) {
 
@@ -207,7 +211,9 @@ public class Compiladores {
             }
 
             boolean opcDeclacao = false;
-            if (NextOrPrevious.getStatusNP().equals(StatusNP.INCOMPLETO)) {
+            NextOrPrevious.modificarStatus();
+
+            if(NextOrPrevious.getStatusNP().equals(StatusNP.INCOMPLETO)) {
                 if(opcVarDlc(tokenList)) {
                     opcDeclacao = true;
                 }
@@ -216,6 +222,13 @@ public class Compiladores {
                     NextOrPrevious.modificarStatus();
                     return true;
                 }
+            }
+
+            if(primeiroValido
+                    && segundoValido
+                    && !terceiroValido
+                    && !tokenList.get(NextOrPrevious.getPosition()).getValor().equals(",")
+                    && tokenList.size()==3){
             }
         }
 
@@ -231,12 +244,13 @@ public class Compiladores {
     }
 
     public static boolean opcVarDlc(List<Token> tokenList) {
-        if (AnaliseToken.virgulaOpc(tokenList.get(NextOrPrevious.getPosition()))
-                && varDlc(tokenList.get(NextOrPrevious.getPosition()))) {
-
-            return opcVarDlc(tokenList);
+        if(AnaliseToken.virgulaOpc(tokenList.get(NextOrPrevious.getPosition()))) {
+            if(varDlc(tokenList.get(NextOrPrevious.getPosition()))){
+                return opcVarDlc(tokenList);
+            }
         }
-        return tokenList.get(NextOrPrevious.getPosition()).getClasseToken().getNome().equals(ClasseToken.SIMBOLO);
+
+        return AnaliseToken.pontoVirgula(tokenList.get(NextOrPrevious.getPosition()));
     }
 
     /**
@@ -247,46 +261,72 @@ public class Compiladores {
     public static boolean type(Token token) {
         if(token.getClasseToken().getNome().equals(ClasseToken.PALAVRA_RESERVADA)) {
             NextOrPrevious.next();
-            System.out.println("É um tipo");
             return true;
         }
         return false;
     }
 
-    private static boolean parmTypes(List<Token> tokenList) {
-        if(tokenList.get(NextOrPrevious.getPosition()).getValor().equals("void")) {
-            return true;
-        } else if (type(tokenList.get(NextOrPrevious.getPosition())) &&
-                AnaliseToken.isIdent(tokenList.get(NextOrPrevious.getPosition()))) {
-            if(AnaliseToken.colcheteAbeturaDeExpressao(tokenList.get(NextOrPrevious.getPosition()))
-                    && AnaliseToken.colcheteFechaDeExpressao(tokenList.get(NextOrPrevious.getPosition()))) {
-                return true;
-            }
-            return true;
-        }
-        return false;
+    public static boolean parmTypes(List<Token> tokenList) {
+        return (type(tokenList.get(NextOrPrevious.getPosition()))
+                && AnaliseToken.isIdent(tokenList.get(NextOrPrevious.getPosition())));
     }
 
     // sb.append("int teste(int i[]) {\n");
     private static boolean func(List<Token> tokenList) {
-        if(type(tokenList.get(NextOrPrevious.getPosition()))
-                && AnaliseToken.isIdent(tokenList.get(NextOrPrevious.getPosition()))
-                && AnaliseToken.abreParenteses(tokenList.get(NextOrPrevious.getPosition()))
-                && AnaliseToken.fechaParenteses(tokenList.get(NextOrPrevious.getPosition()))
-                && AnaliseToken.abreChaves(tokenList.get(NextOrPrevious.getPosition()))) {
-            return true;
-        } else {
-            return false;
+        if(tokenList.size()>= 3) {
+
+            boolean estruturaValida = type(tokenList.get(NextOrPrevious.getPosition()))
+                    && AnaliseToken.isIdent(tokenList.get(NextOrPrevious.getPosition()))
+                    && AnaliseToken.abreParenteses(tokenList.get(NextOrPrevious.getPosition()))
+                    && AnaliseToken.fechaParenteses(tokenList.get(NextOrPrevious.getPosition()))
+                    && (isBloco(tokenList)) || AnaliseToken.pontoVirgula(tokenList.get(NextOrPrevious.getPosition()));
+
+           if (estruturaValida) {
+                System.out.println("Tokens de <Função> encontrados");
+                for (Token listFunc: tokenList) {
+                    System.out.println(listFunc.getValor());
+                }
+
+                NextOrPrevious.modificarStatus();
+
+                if(NextOrPrevious.getStatusNP().equals(StatusNP.COMPLETO)) {
+                    System.out.println("Verificando o bloco dentro da função");
+                    do{
+                        NextOrPrevious.nextRow();
+
+                        tokenList = TabelaSimbolo.getTokensByLinha(NextOrPrevious.getRow());
+                        NextOrPrevious.setSize(tokenList.size());
+                        NextOrPrevious.resetPosition();
+
+                        if(dlc(tokenList)) {
+                            NextOrPrevious.resetPosition();
+                            System.out.println("Encontrou uma dlc na linha: " + NextOrPrevious.getRow());
+                            for (Token token: tokenList) {
+                                System.out.println(token.getValor());
+                            }
+                        } else {
+                            System.out.println("Não encontrou uma dlc na linha: " + NextOrPrevious.getRow());
+                        }
+                    } while (!AnaliseToken.fechaChaves(tokenList.get(NextOrPrevious.getPosition())));
+                }
+                System.out.println("Fim da função");
+                return true;
+           }
         }
+        return false;
     }
 
-    //STMT
-    //ASSG
+    // {void} || {bloco}
+    private static boolean isBloco(List<Token> tokenList) {
+        boolean abreChaves = AnaliseToken.abreChaves(tokenList.get(NextOrPrevious.getPosition()));
 
-    public static boolean prog(List<Token> tokens) {
-        return dlc(tokens);
+        return false;
     }
 
-    
+    public static boolean stmt(List<Token> tokenList) {
+        return true;
+    }
+
 }
+
 
